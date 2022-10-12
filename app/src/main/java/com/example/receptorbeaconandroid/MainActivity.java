@@ -2,7 +2,11 @@ package com.example.receptorbeaconandroid;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,6 +19,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import java.util.List;
 
 // -------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------
@@ -29,6 +35,16 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner elEscanner;
     private static final int CODIGO_PETICION_PERMISOS = 11223344;
+    private ScanCallback callbackDelEscaneo = null;
+    private static MainActivity instancia;
+
+    public MainActivity() {
+        instancia = this;
+    }
+
+    public static MainActivity getInstancia() {
+        return instancia;
+    }
     // ---------------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------------
     public void botonArrancarServicioPulsado( View v ) {
@@ -139,9 +155,12 @@ public class MainActivity extends AppCompatActivity {
 //------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------
+    //METODOS BLUETOOTH
+//------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------
 
-    // --------------------------------------------------------------
-    // --------------------------------------------------------------
     private void inicializarBlueTooth() {
         Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): obtenemos adaptador BT ");
 
@@ -187,6 +206,249 @@ public class MainActivity extends AppCompatActivity {
             Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): parece que YA tengo los permisos necesarios !!!!");
 
         }
+
+    } // ()
+
+    // --------------------------------------------------------------
+    // --------------------------------------------------------------
+    public void buscarEsteDispositivoBTLE(final String dispositivoBuscado) {
+        Log.d(ETIQUETA_LOG, " buscarEsteDispositivoBTLE(): empieza ");
+
+        Log.d(ETIQUETA_LOG, "  buscarEsteDispositivoBTLE(): instalamos scan callback ");
+
+
+        // super.onScanResult(ScanSettings.SCAN_MODE_LOW_LATENCY, result); para ahorro de energía
+
+        this.callbackDelEscaneo = new ScanCallback() {
+            @Override
+            public void onScanResult(int callbackType, ScanResult resultado) {
+                super.onScanResult(callbackType, resultado);
+                Log.d(ETIQUETA_LOG, "  buscarEsteDispositivoBTLE(): onScanResult() ");
+
+                mostrarInformacionDispositivoBTLE(resultado);
+            }
+
+            @Override
+            public void onBatchScanResults(List<ScanResult> results) {
+                super.onBatchScanResults(results);
+                Log.d(ETIQUETA_LOG, "  buscarEsteDispositivoBTLE(): onBatchScanResults() ");
+
+            }
+
+            @Override
+            public void onScanFailed(int errorCode) {
+                super.onScanFailed(errorCode);
+                Log.d(ETIQUETA_LOG, "  buscarEsteDispositivoBTLE(): onScanFailed() ");
+
+            }
+        };
+
+        ScanFilter sf = new ScanFilter.Builder().setDeviceName( dispositivoBuscado).build();
+
+        Log.d(ETIQUETA_LOG, "  buscarEsteDispositivoBTLE(): empezamos a escanear buscando: " + dispositivoBuscado);
+        //Log.d(ETIQUETA_LOG, "  buscarEsteDispositivoBTLE(): empezamos a escanear buscando: " + dispositivoBuscado
+        //      + " -> " + Utilidades.stringToUUID( dispositivoBuscado ) );
+
+        /*List<ScanFilter> listaFilter = new List<ScanFilter>() {
+            @Override
+            public int size() {
+                return 0;
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return false;
+            }
+
+            @Override
+            public boolean contains(@Nullable Object o) {
+                return false;
+            }
+
+            @NonNull
+            @Override
+            public Iterator<ScanFilter> iterator() {
+                return null;
+            }
+
+            @NonNull
+            @Override
+            public Object[] toArray() {
+                return new Object[0];
+            }
+
+            @NonNull
+            @Override
+            public <T> T[] toArray(@NonNull T[] ts) {
+                return null;
+            }
+
+            @Override
+            public boolean add(ScanFilter scanFilter) {
+                return false;
+            }
+
+            @Override
+            public boolean remove(@Nullable Object o) {
+                return false;
+            }
+
+            @Override
+            public boolean containsAll(@NonNull Collection<?> collection) {
+                return false;
+            }
+
+            @Override
+            public boolean addAll(@NonNull Collection<? extends ScanFilter> collection) {
+                return false;
+            }
+
+            @Override
+            public boolean addAll(int i, @NonNull Collection<? extends ScanFilter> collection) {
+                return false;
+            }
+
+            @Override
+            public boolean removeAll(@NonNull Collection<?> collection) {
+                return false;
+            }
+
+            @Override
+            public boolean retainAll(@NonNull Collection<?> collection) {
+                return false;
+            }
+
+            @Override
+            public void clear() {
+
+            }
+
+            @Override
+            public ScanFilter get(int i) {
+                return null;
+            }
+
+            @Override
+            public ScanFilter set(int i, ScanFilter scanFilter) {
+                return null;
+            }
+
+            @Override
+            public void add(int i, ScanFilter scanFilter) {
+
+            }
+
+            @Override
+            public ScanFilter remove(int i) {
+                return null;
+            }
+
+            @Override
+            public int indexOf(@Nullable Object o) {
+                return 0;
+            }
+
+            @Override
+            public int lastIndexOf(@Nullable Object o) {
+                return 0;
+            }
+
+            @NonNull
+            @Override
+            public ListIterator<ScanFilter> listIterator() {
+                return null;
+            }
+
+            @NonNull
+            @Override
+            public ListIterator<ScanFilter> listIterator(int i) {
+                return null;
+            }
+
+            @NonNull
+            @Override
+            public List<ScanFilter> subList(int i, int i1) {
+                return null;
+            }
+        };
+        listaFilter.add(sf);*/
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            solicitarPermisos();
+
+        }
+        //this.elEscanner.startScan(listaFilter,null, this.callbackDelEscaneo );
+        this.elEscanner.startScan( this.callbackDelEscaneo );
+    } // ()
+
+    // --------------------------------------------------------------
+    // --------------------------------------------------------------
+    public void detenerBusquedaDispositivosBTLE() {
+
+        if (this.callbackDelEscaneo == null) {
+            return;
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            solicitarPermisos();
+
+        }
+        this.elEscanner.stopScan(this.callbackDelEscaneo);
+        this.callbackDelEscaneo = null;
+
+    } // ()
+
+    // --------------------------------------------------------------
+    // --------------------------------------------------------------
+// --------------------------------------------------------------
+    // --------------------------------------------------------------
+    private void mostrarInformacionDispositivoBTLE(ScanResult resultado) {
+
+        BluetoothDevice bluetoothDevice = resultado.getDevice();
+        byte[] bytes = resultado.getScanRecord().getBytes();
+        int rssi = resultado.getRssi();
+
+        Log.d(ETIQUETA_LOG, " ****************************************************");
+        Log.d(ETIQUETA_LOG, " ****** DISPOSITIVO DETECTADO BTLE ****************** ");
+        Log.d(ETIQUETA_LOG, " ****************************************************");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            solicitarPermisos();
+
+        }
+        Log.d(ETIQUETA_LOG, " nombre = " + bluetoothDevice.getName());
+        Log.d(ETIQUETA_LOG, " toString = " + bluetoothDevice.toString());
+
+        /*
+        ParcelUuid[] puuids = bluetoothDevice.getUuids();
+        if ( puuids.length >= 1 ) {
+            //Log.d(ETIQUETA_LOG, " uuid = " + puuids[0].getUuid());
+           // Log.d(ETIQUETA_LOG, " uuid = " + puuids[0].toString());
+        }*/
+
+        Log.d(ETIQUETA_LOG, " dirección = " + bluetoothDevice.getAddress());
+        Log.d(ETIQUETA_LOG, " rssi = " + rssi);
+
+        Log.d(ETIQUETA_LOG, " bytes = " + new String(bytes));
+        Log.d(ETIQUETA_LOG, " bytes (" + bytes.length + ") = " + Utilidades.bytesToHexString(bytes));
+
+        TramaIBeacon tib = new TramaIBeacon(bytes);
+
+        Log.d(ETIQUETA_LOG, " ----------------------------------------------------");
+        Log.d(ETIQUETA_LOG, " prefijo  = " + Utilidades.bytesToHexString(tib.getPrefijo()));
+        Log.d(ETIQUETA_LOG, "          advFlags = " + Utilidades.bytesToHexString(tib.getAdvFlags()));
+        Log.d(ETIQUETA_LOG, "          advHeader = " + Utilidades.bytesToHexString(tib.getAdvHeader()));
+        Log.d(ETIQUETA_LOG, "          companyID = " + Utilidades.bytesToHexString(tib.getCompanyID()));
+        Log.d(ETIQUETA_LOG, "          iBeacon type = " + Integer.toHexString(tib.getiBeaconType()));
+        Log.d(ETIQUETA_LOG, "          iBeacon length 0x = " + Integer.toHexString(tib.getiBeaconLength()) + " ( "
+                + tib.getiBeaconLength() + " ) ");
+        Log.d(ETIQUETA_LOG, " uuid  = " + Utilidades.bytesToHexString(tib.getUUID()));
+        Log.d(ETIQUETA_LOG, " uuid  = " + Utilidades.bytesToString(tib.getUUID()));
+        Log.d(ETIQUETA_LOG, " major  = " + Utilidades.bytesToHexString(tib.getMajor()) + "( "
+                + Utilidades.bytesToInt(tib.getMajor()) + " ) ");
+        Log.d(ETIQUETA_LOG, " minor  = " + Utilidades.bytesToHexString(tib.getMinor()) + "( "
+                + Utilidades.bytesToInt(tib.getMinor()) + " ) ");
+        Log.d(ETIQUETA_LOG, " txPower  = " + Integer.toHexString(tib.getTxPower()) + " ( " + tib.getTxPower() + " )");
+        Log.d(ETIQUETA_LOG, " ****************************************************");
+
     } // ()
 } // class
 // -------------------------------------------------------------------------------------------------

@@ -55,7 +55,7 @@ public class ServicioEscuharBeacons  extends IntentService {
         if ( this.seguir == false ) {
             return;
         }
-
+        MainActivity.getInstancia().detenerBusquedaDispositivosBTLE();
         this.seguir = false;
         this.stopSelf();
 
@@ -93,7 +93,7 @@ public class ServicioEscuharBeacons  extends IntentService {
         Log.d(ETIQUETA_LOG, " ServicioEscucharBeacons.onHandleIntent: empieza : thread=" + Thread.currentThread().getId() );
 
         try {
-
+            MainActivity.getInstancia().buscarEsteDispositivoBTLE("fistro");
             while ( this.seguir ) {
                 Thread.sleep(tiempoDeEspera);
                 Log.d(ETIQUETA_LOG, " ServicioEscucharBeacons.onHandleIntent: tras la espera:  " + contador );
