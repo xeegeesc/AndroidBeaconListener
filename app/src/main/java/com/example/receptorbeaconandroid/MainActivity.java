@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
 
@@ -20,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.Date;
 import java.util.List;
 
 // -------------------------------------------------------------------------------------------------
@@ -399,8 +401,6 @@ public class MainActivity extends AppCompatActivity {
 
     // --------------------------------------------------------------
     // --------------------------------------------------------------
-// --------------------------------------------------------------
-    // --------------------------------------------------------------
     private void mostrarInformacionDispositivoBTLE(ScanResult resultado) {
 
         BluetoothDevice bluetoothDevice = resultado.getDevice();
@@ -417,8 +417,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(ETIQUETA_LOG, " nombre = " + bluetoothDevice.getName());
         Log.d(ETIQUETA_LOG, " toString = " + bluetoothDevice.toString());
 
-        /*
-        ParcelUuid[] puuids = bluetoothDevice.getUuids();
+
+        /*ParcelUuid[] puuids = bluetoothDevice.getUuids();
         if ( puuids.length >= 1 ) {
             //Log.d(ETIQUETA_LOG, " uuid = " + puuids[0].getUuid());
            // Log.d(ETIQUETA_LOG, " uuid = " + puuids[0].toString());
@@ -431,7 +431,13 @@ public class MainActivity extends AppCompatActivity {
         Log.d(ETIQUETA_LOG, " bytes (" + bytes.length + ") = " + Utilidades.bytesToHexString(bytes));
 
         TramaIBeacon tib = new TramaIBeacon(bytes);
+        //Pasamos los datos de major y minor a la funcion para que haga el POST
+        medicionRecibida(Utilidades.bytesToHexString(tib.getMajor()), Utilidades.bytesToHexString(tib.getMinor()));
 
+
+        //------------------------------------------------
+        //LOG
+        //------------------------------------------------
         Log.d(ETIQUETA_LOG, " ----------------------------------------------------");
         Log.d(ETIQUETA_LOG, " prefijo  = " + Utilidades.bytesToHexString(tib.getPrefijo()));
         Log.d(ETIQUETA_LOG, "          advFlags = " + Utilidades.bytesToHexString(tib.getAdvFlags()));
@@ -450,6 +456,31 @@ public class MainActivity extends AppCompatActivity {
         Log.d(ETIQUETA_LOG, " ****************************************************");
 
     } // ()
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------
+    //METODO Peticion rest
+//------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+    public void medicionRecibida (String major, String minor) {
+        Log.d("clienterestandroid", "boton_enviar_pulsado");
+
+        // ojo: creo que hay que crear uno nuevo cada vez
+        PeticionarioREST elPeticionario = new PeticionarioREST();
+
+        Date fechaHoy = new Date();
+        elPeticionario.hacerPeticionREST("POST", "https://jegeesc.upv.edu.es/proyecto3a/insertar.php",
+                //"{\"Valor\": \"8888\", \"TipoMedida\": \"PruebaMovil\", \"Fecha\": \" " + fechaHoy.getTime() + " \" , \"Latitud\": \"1231\" , \"Longitud\": \"1231\"}",
+                "Valor="+major+"&TipoMedida=MedidaMovil&Fecha="+fechaHoy.getTime()+"&Latitud=38.995844400283715&Longitud=-0.16542336747835645",
+                new PeticionarioREST.RespuestaREST () {
+                    @Override
+                    public void callback(int codigo, String cuerpo) {
+                        Log.d ("clienterestandroid" ,"codigo respuesta: " + codigo + " <-> \n" + cuerpo);
+                    }
+                });
+
+    } // pulsado ()
 } // class
 // -------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------
