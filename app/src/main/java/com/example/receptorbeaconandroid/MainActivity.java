@@ -14,6 +14,7 @@ import android.view.View;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 // -------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------
@@ -26,7 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private Intent elIntentDelServicio = null;
     private BluetoothLeScanner mBluetoothLeScanner;
     private BluetoothAdapter mBluetoothAdapter;
-
+    private BluetoothLeScanner elEscanner;
+    private static final int CODIGO_PETICION_PERMISOS = 11223344;
     // ---------------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------------
     public void botonArrancarServicioPulsado( View v ) {
@@ -37,20 +39,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        //si los permisos no estan concedidos, los solicita
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-            solicitarPermisos();
-        }
-
-        //utiliza el adaptador bluetooth del telefono
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-
-/*
-        setScanFilter();
-        setScanSettings();
-        mBluetoothLeScanner.startScan(Arrays.asList(mScanFilter), mScanSettings, mScanCallback);
-*/
         Log.d(ETIQUETA_LOG, " MainActivity.constructor : voy a arrancar el servicio");
 
         this.elIntentDelServicio = new Intent(this, ServicioEscuharBeacons.class);
@@ -87,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(ETIQUETA_LOG, " MainActivity.constructor : empieza");
 
-
+        //preparamos todo para detectar bluetooth
+        inicializarBlueTooth();
 
         Log.d(ETIQUETA_LOG, " MainActivity.constructor : acaba");
 
@@ -144,6 +133,61 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }//OnRequestPermission
+//------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------
+    //FIN DE PERMISOS
+//------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    // --------------------------------------------------------------
+    // --------------------------------------------------------------
+    private void inicializarBlueTooth() {
+        Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): obtenemos adaptador BT ");
+
+        BluetoothAdapter bta = BluetoothAdapter.getDefaultAdapter();
+
+        elEscanner = bta.getBluetoothLeScanner();
+
+        //solicito permisos por si no los tengo
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            solicitarPermisos();
+        }
+
+        Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): habilitamos adaptador BT ");
+        bta.enable();
+
+        Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): habilitado =  " + bta.isEnabled() );
+
+        Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): estado =  " + bta.getState() );
+
+        Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): obtenemos escaner btle ");
+
+        this.elEscanner = bta.getBluetoothLeScanner();
+
+        if ( this.elEscanner == null ) {
+            Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): Socorro: NO hemos obtenido escaner btle  !!!!");
+
+        }
+
+        Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): voy a perdir permisos (si no los tuviera) !!!!");
+
+        if (
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
+                        || ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED
+                        || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        )
+        {
+            ActivityCompat.requestPermissions(
+                    MainActivity.this,
+                    new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.ACCESS_FINE_LOCATION},
+                    CODIGO_PETICION_PERMISOS);
+        }
+        else {
+            Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): parece que YA tengo los permisos necesarios !!!!");
+
+        }
+    } // ()
 } // class
 // -------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------
