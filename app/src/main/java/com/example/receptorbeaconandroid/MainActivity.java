@@ -7,6 +7,7 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,13 +17,18 @@ import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 // -------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------
@@ -35,11 +41,133 @@ public class MainActivity extends AppCompatActivity {
     private Intent elIntentDelServicio = null;
     private BluetoothLeScanner mBluetoothLeScanner;
     private BluetoothAdapter mBluetoothAdapter;
+    private ScanSettings settings;
     private BluetoothLeScanner elEscanner;
     private static final int CODIGO_PETICION_PERMISOS = 11223344;
     private ScanCallback callbackDelEscaneo = null;
     private static MainActivity instancia;
+    List<ScanFilter> listaFilter = new List<ScanFilter>() {
+        @Override
+        public int size() {
+            return 0;
+        }
 
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public boolean contains(@Nullable Object o) {
+            return false;
+        }
+
+        @NonNull
+        @Override
+        public Iterator<ScanFilter> iterator() {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public Object[] toArray() {
+            return new Object[0];
+        }
+
+        @NonNull
+        @Override
+        public <T> T[] toArray(@NonNull T[] ts) {
+            return null;
+        }
+
+        @Override
+        public boolean add(ScanFilter scanFilter) {
+            return false;
+        }
+
+        @Override
+        public boolean remove(@Nullable Object o) {
+            return false;
+        }
+
+        @Override
+        public boolean containsAll(@NonNull Collection<?> collection) {
+            return false;
+        }
+
+        @Override
+        public boolean addAll(@NonNull Collection<? extends ScanFilter> collection) {
+            return false;
+        }
+
+        @Override
+        public boolean addAll(int i, @NonNull Collection<? extends ScanFilter> collection) {
+            return false;
+        }
+
+        @Override
+        public boolean removeAll(@NonNull Collection<?> collection) {
+            return false;
+        }
+
+        @Override
+        public boolean retainAll(@NonNull Collection<?> collection) {
+            return false;
+        }
+
+        @Override
+        public void clear() {
+
+        }
+
+        @Override
+        public ScanFilter get(int i) {
+            return null;
+        }
+
+        @Override
+        public ScanFilter set(int i, ScanFilter scanFilter) {
+            return null;
+        }
+
+        @Override
+        public void add(int i, ScanFilter scanFilter) {
+
+        }
+
+        @Override
+        public ScanFilter remove(int i) {
+            return null;
+        }
+
+        @Override
+        public int indexOf(@Nullable Object o) {
+            return 0;
+        }
+
+        @Override
+        public int lastIndexOf(@Nullable Object o) {
+            return 0;
+        }
+
+        @NonNull
+        @Override
+        public ListIterator<ScanFilter> listIterator() {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public ListIterator<ScanFilter> listIterator(int i) {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public List<ScanFilter> subList(int i, int i1) {
+            return null;
+        }
+    };
     public MainActivity() {
         instancia = this;
     }
@@ -245,8 +373,14 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        ScanFilter sf = new ScanFilter.Builder().setDeviceName( dispositivoBuscado).build();
+        ScanFilter sf = new ScanFilter.Builder().setDeviceName(dispositivoBuscado).build();
+       settings = new ScanSettings.Builder ()
+                .setScanMode (ScanSettings.SCAN_MODE_BALANCED)
+                .setCallbackType (ScanSettings.CALLBACK_TYPE_FIRST_MATCH
 
+                )
+                .build ();
+        listaFilter.add(sf);
         Log.d(ETIQUETA_LOG, "  buscarEsteDispositivoBTLE(): empezamos a escanear buscando: " + dispositivoBuscado);
         //Log.d(ETIQUETA_LOG, "  buscarEsteDispositivoBTLE(): empezamos a escanear buscando: " + dispositivoBuscado
         //      + " -> " + Utilidades.stringToUUID( dispositivoBuscado ) );
@@ -378,7 +512,7 @@ public class MainActivity extends AppCompatActivity {
             solicitarPermisos();
 
         }
-        //this.elEscanner.startScan(listaFilter,null, this.callbackDelEscaneo );
+        //this.elEscanner.startScan(listaFilter, settings, this.callbackDelEscaneo );
         this.elEscanner.startScan( this.callbackDelEscaneo );
     } // ()
 
@@ -470,7 +604,7 @@ public class MainActivity extends AppCompatActivity {
         PeticionarioREST elPeticionario = new PeticionarioREST();
 
         Date fechaHoy = new Date();
-        elPeticionario.hacerPeticionREST("POST", "https://jegeesc.upv.edu.es/proyecto3a/insertar.php",
+        elPeticionario.hacerPeticionREST("POST", "https://jegeesc.upv.edu.es/proyecto3a/index.php",
                 //"{\"Valor\": \"8888\", \"TipoMedida\": \"PruebaMovil\", \"Fecha\": \" " + fechaHoy.getTime() + " \" , \"Latitud\": \"1231\" , \"Longitud\": \"1231\"}",
                 "Valor="+major+"&TipoMedida=MedidaMovil&Fecha="+fechaHoy.getTime()+"&Latitud=38.995844400283715&Longitud=-0.16542336747835645",
                 new PeticionarioREST.RespuestaREST () {
