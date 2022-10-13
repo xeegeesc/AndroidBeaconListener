@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -171,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
     public MainActivity() {
         instancia = this;
     }
+    TextView textoBluetooth;
 
     public static MainActivity getInstancia() {
         return instancia;
@@ -220,7 +222,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Log.d(ETIQUETA_LOG, " MainActivity.constructor : empieza");
-
+        textoBluetooth = findViewById(R.id.resultadoBluetooth);
+        textoBluetooth.setText("");
         //preparamos todo para detectar bluetooth
         inicializarBlueTooth();
 
@@ -568,7 +571,7 @@ public class MainActivity extends AppCompatActivity {
         //Pasamos los datos de major y minor a la funcion para que haga el POST
         medicionRecibida(Utilidades.bytesToHexString(tib.getMajor()), Utilidades.bytesToHexString(tib.getMinor()));
 
-
+        textoBluetooth.setText("Major: " + Utilidades.bytesToInt(tib.getMajor()) + ", Minor: " + Utilidades.bytesToInt(tib.getMinor()));
         //------------------------------------------------
         //LOG
         //------------------------------------------------

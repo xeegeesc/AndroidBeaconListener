@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import static android.app.Service.START_STICKY;
 
@@ -23,6 +24,7 @@ public class ServicioEscuharBeacons  extends IntentService {
     // ---------------------------------------------------------------------------------------------
     public ServicioEscuharBeacons(  ) {
         super("HelloIntentService");
+
 
         Log.d(ETIQUETA_LOG, " ServicioEscucharBeacons.constructor: termina");
     }
