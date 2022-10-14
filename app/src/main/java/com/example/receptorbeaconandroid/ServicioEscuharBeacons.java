@@ -95,7 +95,7 @@ public class ServicioEscuharBeacons  extends IntentService {
         Log.d(ETIQUETA_LOG, " ServicioEscucharBeacons.onHandleIntent: empieza : thread=" + Thread.currentThread().getId() );
 
         try {
-            MainActivity.getInstancia().buscarEsteDispositivoBTLE("fistro");
+            MainActivity.getInstancia().buscarEsteDispositivoBTLE("EPSG-GTI-PROY-3A");
             while ( this.seguir ) {
                 Thread.sleep(tiempoDeEspera);
                 Log.d(ETIQUETA_LOG, " ServicioEscucharBeacons.onHandleIntent: tras la espera:  " + contador );
