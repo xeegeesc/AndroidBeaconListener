@@ -550,15 +550,20 @@ public class MainActivity extends AppCompatActivity {
         byte[] bytes = resultado.getScanRecord().getBytes();
         int rssi = resultado.getRssi();
 
-        Log.d(ETIQUETA_LOG, " ****************************************************");
-        Log.d(ETIQUETA_LOG, " ****** DISPOSITIVO DETECTADO BTLE ****************** ");
-        Log.d(ETIQUETA_LOG, " ****************************************************");
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            solicitarPermisos();
 
-        }
-        Log.d(ETIQUETA_LOG, " nombre = " + bluetoothDevice.getName());
-        Log.d(ETIQUETA_LOG, " toString = " + bluetoothDevice.toString());
+
+        TramaIBeacon tib = new TramaIBeacon(bytes);
+
+        if(Utilidades.bytesToString(tib.getUUID()).equals("XEVI-GTI-PROY-3A")){
+            Log.d(ETIQUETA_LOG, " ****************************************************");
+            Log.d(ETIQUETA_LOG, " ****** DISPOSITIVO DETECTADO BTLE ****************** ");
+            Log.d(ETIQUETA_LOG, " ****************************************************");
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                solicitarPermisos();
+
+            }
+            Log.d(ETIQUETA_LOG, " nombre = " + bluetoothDevice.getName());
+            Log.d(ETIQUETA_LOG, " toString = " + bluetoothDevice.toString());
 
 
         /*ParcelUuid[] puuids = bluetoothDevice.getUuids();
@@ -567,18 +572,15 @@ public class MainActivity extends AppCompatActivity {
            // Log.d(ETIQUETA_LOG, " uuid = " + puuids[0].toString());
         }*/
 
-        Log.d(ETIQUETA_LOG, " dirección = " + bluetoothDevice.getAddress());
-        Log.d(ETIQUETA_LOG, " rssi = " + rssi);
+            Log.d(ETIQUETA_LOG, " dirección = " + bluetoothDevice.getAddress());
+            Log.d(ETIQUETA_LOG, " rssi = " + rssi);
 
-        Log.d(ETIQUETA_LOG, " bytes = " + new String(bytes));
-        Log.d(ETIQUETA_LOG, " bytes (" + bytes.length + ") = " + Utilidades.bytesToHexString(bytes));
-
-        TramaIBeacon tib = new TramaIBeacon(bytes);
-        if(Utilidades.bytesToString(tib.getUUID()).equals("EPSG-GTI-PROY-3A")){
+            Log.d(ETIQUETA_LOG, " bytes = " + new String(bytes));
+            Log.d(ETIQUETA_LOG, " bytes (" + bytes.length + ") = " + Utilidades.bytesToHexString(bytes));
             //Pasamos los datos de major y minor a la funcion para que haga el POST
             medicionRecibida(String.valueOf(Utilidades.bytesToInt(tib.getMajor())) , String.valueOf(Utilidades.bytesToInt(tib.getMinor())));
 
-            textoBluetooth.setText("Major: " + Utilidades.bytesToInt(tib.getMajor()) + ", Minor: " + Utilidades.bytesToInt(tib.getMinor()));
+            textoBluetooth.setText("Nombre: "+Utilidades.bytesToString(tib.getUUID())+"Major: " + Utilidades.bytesToInt(tib.getMajor()) + ", Minor: " + Utilidades.bytesToInt(tib.getMinor()));
             //------------------------------------------------
             //LOG
             //------------------------------------------------
